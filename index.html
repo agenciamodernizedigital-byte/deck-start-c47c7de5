@@ -675,9 +675,20 @@ body.idle{cursor:none}
   var HASH='f07a070d5f98bb6f6c6b8123e399d94e2430e823a41f6849cbb61124ec7f9068';
   if(HASH){
     var gate=document.getElementById('gate'),inp=document.getElementById('gcode'),err=document.getElementById('gerr');
+      function sha256js(s){var m=unescape(encodeURIComponent(s)),K=[],H=[1779033703,3144134277,1013904242,2773480762,1359893119,2600822924,528734635,1541459225],i,j,p=2,c=0;
+        function r(x,n){return(x>>>n)|(x<<(32-n))}
+        while(c<64){var pr=1;for(i=2;i*i<=p;i++)if(p%i===0){pr=0;break}if(pr){K[c++]=(Math.pow(p,1/3)%1*4294967296)|0}p++}
+        var w=[],l=m.length*8;for(i=0;i<m.length;i++)w[i>>2]|=m.charCodeAt(i)<<(24-(i%4)*8);
+        w[l>>5]|=128<<(24-l%32);w[((l+64>>9)<<4)+15]=l;
+        for(j=0;j<w.length;j+=16){var a=H.slice(),W=[];
+          for(i=0;i<64;i++){if(i<16)W[i]=w[j+i]|0;else{var s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3),s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0}
+            var t1=(a[7]+(r(a[4],6)^r(a[4],11)^r(a[4],25))+((a[4]&a[5])^(~a[4]&a[6]))+K[i]+W[i])|0,t2=((r(a[0],2)^r(a[0],13)^r(a[0],22))+((a[0]&a[1])^(a[0]&a[2])^(a[1]&a[2])))|0;
+            a=[(t1+t2)|0,a[0],a[1],a[2],(a[3]+t1)|0,a[4],a[5],a[6]]}
+          for(i=0;i<8;i++)H[i]=(H[i]+a[i])|0}
+        return H.map(function(x){return('00000000'+(x>>>0).toString(16)).slice(-8)}).join('')}
     function sha(t){
       if(window.crypto&&crypto.subtle){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)).then(function(b){return [].map.call(new Uint8Array(b),function(x){return ('0'+x.toString(16)).slice(-2)}).join('')})}
-      return Promise.resolve('');
+      return Promise.resolve(sha256js(t));
     }
     var saved=null;try{saved=localStorage.getItem('mdz-deck')}catch(e){}
     if(saved===HASH){locked=false}else{locked=true;gate.classList.add('on');setTimeout(function(){inp.focus()},50)}
